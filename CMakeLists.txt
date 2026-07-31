@@ -21,4 +21,5 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(json)
 
 add_executable(trypillia-lsp src/LSPMain.cpp src/LSP.cpp)
+target_include_directories(trypillia-lsp PRIVATE ${trypillia_language_SOURCE_DIR}/src)
 target_link_libraries(trypillia-lsp PRIVATE trypillia_core nlohmann_json::nlohmann_json)

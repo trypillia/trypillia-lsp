@@ -1,5 +1,5 @@
 #include "LSP.h"
-#include "../utils/ErrorHandling.h"
+#include "utils/ErrorHandling.h"
 #include <sstream>
 
 namespace trypillia {

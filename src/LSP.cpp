@@ -338,14 +338,9 @@ void LSPServer::handleSignatureHelp(const json &message) {
 
     json result = nullptr;
 
-    // Load native_docs.json if not already loaded
+    // Load native docs from embedded data if not already loaded
     if (nativeDocs.is_null()) {
-        std::ifstream f(docsPath);
-        if (f.is_open()) {
-            f >> nativeDocs;
-        } else {
-            nativeDocs = json::object();
-        }
+        nativeDocs = json::parse(getNativeDocsJson());
     }
 
     if (documents.find(uri) != documents.end()) {

@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
 
+set(TRYPILLIA_BUILD_LSP OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
   trypillia_language
   GIT_REPOSITORY https://github.com/trypillia/trypillia-language.git
@@ -21,7 +22,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(json)
 
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/resources/native_docs.json" NATIVE_DOCS_CONTENT)
-string(JSON NATIVE_DOCS_CONTENT GET "${NATIVE_DOCS_CONTENT}" .)
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/native_docs.h.in"
   "${CMAKE_CURRENT_BINARY_DIR}/generated/native_docs.h"

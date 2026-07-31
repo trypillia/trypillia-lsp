@@ -2,7 +2,7 @@
 
 #include "lexer/Lexer.h"
 #include "parser/Parser.h"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include "native_docs.h"
 #include <iostream>
 #include <string>

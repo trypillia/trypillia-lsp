@@ -20,6 +20,17 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(json)
 
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/resources/native_docs.json" NATIVE_DOCS_CONTENT)
+string(JSON NATIVE_DOCS_CONTENT GET "${NATIVE_DOCS_CONTENT}" .)
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/native_docs.h.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/generated/native_docs.h"
+  @ONLY
+)
+
 add_executable(trypillia-lsp src/LSPMain.cpp src/LSP.cpp)
-target_include_directories(trypillia-lsp PRIVATE ${trypillia_language_SOURCE_DIR}/src)
+target_include_directories(trypillia-lsp PRIVATE
+  ${trypillia_language_SOURCE_DIR}/src
+  ${CMAKE_CURRENT_BINARY_DIR}/generated
+)
 target_link_libraries(trypillia-lsp PRIVATE trypillia_core nlohmann_json::nlohmann_json)

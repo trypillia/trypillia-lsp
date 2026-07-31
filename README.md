@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/trypillia/trypillia-lsp/actions/workflows/ci.yml/badge.svg)](https://github.com/trypillia/trypillia-lsp/actions/workflows/ci.yml)
 
-Language Server Protocol implementation for the [Trypillia](https://github.com/trypillia/trypillia-language) programming language.
+Language Server Protocol implementation for the [Trypillia](https://github.com/trypillia/trypillia-language) programming language. Provides IDE features like autocompletion, hover info, diagnostics, and semantic highlighting for any LSP-compatible editor.
 
 ## Building
 

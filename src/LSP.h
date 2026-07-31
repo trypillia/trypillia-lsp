@@ -3,6 +3,7 @@
 #include "../lexer/Lexer.h"
 #include "../parser/Parser.h"
 #include "json.hpp"
+#include "native_docs.h"
 #include <iostream>
 #include <string>
 #include <unordered_map>
@@ -13,8 +14,7 @@ namespace trypillia {
 
 class LSPServer {
   public:
-    LSPServer(const std::string &docsPath = "src/lsp/native_docs.json") : docsPath(docsPath) {
-    }
+    LSPServer() = default;
     void run();
 
   private:
@@ -37,7 +37,6 @@ class LSPServer {
     bool isRunning = true;
     std::unordered_map<std::string, std::string> documents;
     json nativeDocs;
-    std::string docsPath;
 };
 
 } // namespace trypillia

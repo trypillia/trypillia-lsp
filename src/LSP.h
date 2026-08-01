@@ -1,7 +1,7 @@
 #pragma once
 
-#include "lexer/Lexer.h"
-#include "parser/Parser.h"
+#include "frontend/lexer/Lexer.h"
+#include "frontend/parser/Parser.h"
 #include <nlohmann/json.hpp>
 #include "native_docs.h"
 #include <iostream>

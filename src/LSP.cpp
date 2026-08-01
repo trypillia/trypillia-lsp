@@ -2,43 +2,56 @@
 #include "utils/ErrorHandling.h"
 #include <sstream>
 
-namespace trypillia {
+namespace trypillia
+{
 
-void LSPServer::run() {
-    while (isRunning) {
+void LSPServer::run()
+{
+    while (isRunning)
+    {
         std::string message = readMessage();
-        if (message.empty()) {
+        if (message.empty())
+        {
             continue;
         }
 
-        try {
+        try
+        {
             json parsedMessage = json::parse(message);
             handleMessage(parsedMessage);
-        } catch (const json::parse_error &e) {
+        }
+        catch (const json::parse_error &e)
+        {
             std::cerr << "JSON parse error: " << e.what() << std::endl;
         }
     }
 }
 
-std::string LSPServer::readMessage() {
+std::string LSPServer::readMessage()
+{
     std::string line;
     int contentLength = 0;
 
-    while (std::getline(std::cin, line)) {
-        if (!line.empty() && line.back() == '\r') {
+    while (std::getline(std::cin, line))
+    {
+        if (!line.empty() && line.back() == '\r')
+        {
             line.pop_back();
         }
 
-        if (line.empty()) {
+        if (line.empty())
+        {
             break; // Empty line separates headers from body
         }
 
-        if (line.find("Content-Length: ") == 0) {
+        if (line.find("Content-Length: ") == 0)
+        {
             contentLength = std::stoi(line.substr(16));
         }
     }
 
-    if (contentLength > 0) {
+    if (contentLength > 0)
+    {
         std::string content(contentLength, ' ');
         std::cin.read(&content[0], contentLength);
         return content;
@@ -47,46 +60,71 @@ std::string LSPServer::readMessage() {
     return "";
 }
 
-void LSPServer::sendMessage(const json &message) {
+void LSPServer::sendMessage(const json &message)
+{
     std::string content = message.dump(-1, ' ', false, json::error_handler_t::replace);
 
     std::cout << "Content-Length: " << content.length() << "\r\n\r\n" << content;
     std::cout.flush();
 }
 
-void LSPServer::handleMessage(const json &message) {
-    if (message.contains("method")) {
+void LSPServer::handleMessage(const json &message)
+{
+    if (message.contains("method"))
+    {
         std::string method = message["method"];
 
-        if (method == "initialize") {
+        if (method == "initialize")
+        {
             handleInitialize(message);
-        } else if (method == "initialized") {
+        }
+        else if (method == "initialized")
+        {
             handleInitialized(message);
-        } else if (method == "textDocument/didOpen") {
+        }
+        else if (method == "textDocument/didOpen")
+        {
             handleDidOpen(message);
-        } else if (method == "textDocument/didChange") {
+        }
+        else if (method == "textDocument/didChange")
+        {
             handleDidChange(message);
-        } else if (method == "textDocument/hover") {
+        }
+        else if (method == "textDocument/hover")
+        {
             handleHover(message);
-        } else if (method == "textDocument/definition") {
+        }
+        else if (method == "textDocument/definition")
+        {
             handleDefinition(message);
-        } else if (method == "textDocument/completion") {
+        }
+        else if (method == "textDocument/completion")
+        {
             handleCompletion(message);
-        } else if (method == "textDocument/signatureHelp") {
+        }
+        else if (method == "textDocument/signatureHelp")
+        {
             handleSignatureHelp(message);
-        } else if (method == "textDocument/semanticTokens/full") {
+        }
+        else if (method == "textDocument/semanticTokens/full")
+        {
             handleSemanticTokens(message);
-        } else if (method == "shutdown") {
+        }
+        else if (method == "shutdown")
+        {
             isRunning = false;
             json response = {{"jsonrpc", "2.0"}, {"id", message["id"]}, {"result", nullptr}};
             sendMessage(response);
-        } else if (method == "exit") {
+        }
+        else if (method == "exit")
+        {
             isRunning = false;
         }
     }
 }
 
-void LSPServer::handleInitialize(const json &message) {
+void LSPServer::handleInitialize(const json &message)
+{
     json response = {{"jsonrpc", "2.0"},
                      {"id", message["id"]},
                      {"result",
@@ -106,25 +144,29 @@ void LSPServer::handleInitialize(const json &message) {
     sendMessage(response);
 }
 
-void LSPServer::handleInitialized(const json &message) {
+void LSPServer::handleInitialized(const json &message)
+{
     // Client is fully initialized
 }
 
-void LSPServer::handleDidOpen(const json &message) {
+void LSPServer::handleDidOpen(const json &message)
+{
     std::string uri = message["params"]["textDocument"]["uri"];
     std::string text = message["params"]["textDocument"]["text"];
     documents[uri] = text;
     publishDiagnostics(uri, text);
 }
 
-void LSPServer::handleDidChange(const json &message) {
+void LSPServer::handleDidChange(const json &message)
+{
     std::string uri = message["params"]["textDocument"]["uri"];
     std::string text = message["params"]["contentChanges"][0]["text"];
     documents[uri] = text;
     publishDiagnostics(uri, text);
 }
 
-void LSPServer::handleHover(const json &message) {
+void LSPServer::handleHover(const json &message)
+{
     std::string uri = message["params"]["textDocument"]["uri"];
     int line = message["params"]["position"]["line"];
     int character = message["params"]["position"]["character"];
@@ -134,13 +176,15 @@ void LSPServer::handleHover(const json &message) {
 
     json result = nullptr;
 
-    if (documents.find(uri) != documents.end()) {
+    if (documents.find(uri) != documents.end())
+    {
         std::string text = documents[uri];
         Lexer lexer(text);
 
         Token targetToken = {TokenType::UNKNOWN, "", 0, 0};
 
-        while (true) {
+        while (true)
+        {
             Token t = lexer.nextToken();
             if (t.type == TokenType::END_OF_FILE)
                 break;
@@ -150,23 +194,32 @@ void LSPServer::handleHover(const json &message) {
             int tokenStartCol = t.column - 1;
             int tokenEndCol = tokenStartCol + t.lexeme.length();
 
-            if (t.line == targetLine && character >= tokenStartCol && character <= tokenEndCol) {
+            if (t.line == targetLine && character >= tokenStartCol && character <= tokenEndCol)
+            {
                 targetToken = t;
                 break;
             }
         }
 
-        if (targetToken.type != TokenType::UNKNOWN && targetToken.type != TokenType::END_OF_FILE) {
+        if (targetToken.type != TokenType::UNKNOWN && targetToken.type != TokenType::END_OF_FILE)
+        {
             std::string hoverText = "";
 
             // Simple type determination for hover
-            if (targetToken.type == TokenType::IDENTIFIER) {
+            if (targetToken.type == TokenType::IDENTIFIER)
+            {
                 hoverText = "**Identifier**: `" + targetToken.lexeme + "`";
-            } else if (targetToken.type == TokenType::NUMBER) {
+            }
+            else if (targetToken.type == TokenType::NUMBER)
+            {
                 hoverText = "**Number**: `" + targetToken.lexeme + "`";
-            } else if (targetToken.type == TokenType::STRING) {
+            }
+            else if (targetToken.type == TokenType::STRING)
+            {
                 hoverText = "**String Literal**";
-            } else {
+            }
+            else
+            {
                 hoverText = "**Keyword/Operator**: `" + targetToken.lexeme + "`";
             }
 
@@ -179,7 +232,8 @@ void LSPServer::handleHover(const json &message) {
     sendMessage(response);
 }
 
-void LSPServer::handleDefinition(const json &message) {
+void LSPServer::handleDefinition(const json &message)
+{
     std::string uri = message["params"]["textDocument"]["uri"];
     int line = message["params"]["position"]["line"];
     int character = message["params"]["position"]["character"];
@@ -187,14 +241,16 @@ void LSPServer::handleDefinition(const json &message) {
     int targetLine = line + 1;
     json result = nullptr;
 
-    if (documents.find(uri) != documents.end()) {
+    if (documents.find(uri) != documents.end())
+    {
         std::string text = documents[uri];
         Lexer lexer(text);
 
         Token targetToken = {TokenType::UNKNOWN, "", 0, 0};
         std::vector<Token> allTokens;
 
-        while (true) {
+        while (true)
+        {
             Token t = lexer.nextToken();
             if (t.type == TokenType::END_OF_FILE)
                 break;
@@ -203,18 +259,22 @@ void LSPServer::handleDefinition(const json &message) {
             int tokenStartCol = t.column - 1;
             int tokenEndCol = tokenStartCol + t.lexeme.length();
 
-            if (t.line == targetLine && character >= tokenStartCol && character <= tokenEndCol) {
+            if (t.line == targetLine && character >= tokenStartCol && character <= tokenEndCol)
+            {
                 targetToken = t;
             }
         }
 
-        if (targetToken.type == TokenType::IDENTIFIER) {
+        if (targetToken.type == TokenType::IDENTIFIER)
+        {
             // Find where this identifier was defined (let, const, fn, class, etc.)
-            for (size_t i = 0; i < allTokens.size() - 1; ++i) {
+            for (size_t i = 0; i < allTokens.size() - 1; ++i)
+            {
                 if ((allTokens[i].type == TokenType::LET || allTokens[i].type == TokenType::CONST ||
                      allTokens[i].type == TokenType::FN || allTokens[i].type == TokenType::CLASS ||
                      allTokens[i].type == TokenType::INTERFACE || allTokens[i].type == TokenType::TRAIT) &&
-                    allTokens[i + 1].type == TokenType::IDENTIFIER && allTokens[i + 1].lexeme == targetToken.lexeme) {
+                    allTokens[i + 1].type == TokenType::IDENTIFIER && allTokens[i + 1].lexeme == targetToken.lexeme)
+                {
 
                     // Found definition!
                     Token defToken = allTokens[i + 1];
@@ -235,7 +295,8 @@ void LSPServer::handleDefinition(const json &message) {
     sendMessage(response);
 }
 
-void LSPServer::handleCompletion(const json &message) {
+void LSPServer::handleCompletion(const json &message)
+{
     // Basic completion items: keywords
     std::vector<std::string> keywords = {
         "if",      "else",       "while",   "do",      "for",       "in",     "return",  "break",    "continue",
@@ -246,71 +307,89 @@ void LSPServer::handleCompletion(const json &message) {
     json items = json::array();
 
     bool isMethodCompletion = false;
-    if (message.contains("params") && message["params"].contains("context")) {
-        if (message["params"]["context"]["triggerCharacter"] == ".") {
+    if (message.contains("params") && message["params"].contains("context"))
+    {
+        if (message["params"]["context"]["triggerCharacter"] == ".")
+        {
             isMethodCompletion = true;
         }
     }
 
-    if (isMethodCompletion) {
+    if (isMethodCompletion)
+    {
         // Suggest common object/array/string methods
         std::vector<std::string> methods = {"length", "push",     "pop",   "shift", "unshift", "map",    "filter",
                                             "reduce", "toString", "split", "join",  "keys",    "values", "forEach"};
-        for (const auto &m : methods) {
+        for (const auto &m : methods)
+        {
             items.push_back({{"label", m},
                              {"kind", 2}, // Method
                              {"detail", "Method"}});
         }
-    } else {
+    }
+    else
+    {
         // Add keywords
-        for (const auto &kw : keywords) {
+        for (const auto &kw : keywords)
+        {
             items.push_back({{"label", kw},
                              {"kind", 14}, // Keyword
                              {"detail", "Keyword"}});
         }
 
         // Add local variables and functions from the document
-        if (message.contains("params") && message["params"].contains("textDocument")) {
+        if (message.contains("params") && message["params"].contains("textDocument"))
+        {
             std::string uri = message["params"]["textDocument"]["uri"];
-            if (documents.find(uri) != documents.end()) {
+            if (documents.find(uri) != documents.end())
+            {
                 std::string text = documents[uri];
                 Lexer lexer(text);
 
                 Token prevToken = {TokenType::UNKNOWN, "", 0, 0};
                 std::vector<std::string> localIdentifiers;
 
-                while (true) {
+                while (true)
+                {
                     Token t = lexer.nextToken();
                     if (t.type == TokenType::END_OF_FILE)
                         break;
 
-                    if (t.type == TokenType::IDENTIFIER) {
+                    if (t.type == TokenType::IDENTIFIER)
+                    {
                         if (prevToken.type == TokenType::LET || prevToken.type == TokenType::CONST ||
-                            prevToken.type == TokenType::FN || prevToken.type == TokenType::CLASS) {
+                            prevToken.type == TokenType::FN || prevToken.type == TokenType::CLASS)
+                        {
 
                             // Avoid duplicates
                             bool exists = false;
-                            for (const auto &id : localIdentifiers) {
-                                if (id == t.lexeme) {
+                            for (const auto &id : localIdentifiers)
+                            {
+                                if (id == t.lexeme)
+                                {
                                     exists = true;
                                     break;
                                 }
                             }
 
-                            if (!exists) {
+                            if (!exists)
+                            {
                                 localIdentifiers.push_back(t.lexeme);
 
                                 int kind = 6; // Variable by default
                                 std::string detail = "Variable";
-                                if (prevToken.type == TokenType::FN) {
+                                if (prevToken.type == TokenType::FN)
+                                {
                                     kind = 3;
                                     detail = "Function";
                                 } // Function
-                                else if (prevToken.type == TokenType::CLASS) {
+                                else if (prevToken.type == TokenType::CLASS)
+                                {
                                     kind = 7;
                                     detail = "Class";
                                 } // Class
-                                else if (prevToken.type == TokenType::CONST) {
+                                else if (prevToken.type == TokenType::CONST)
+                                {
                                     kind = 21;
                                     detail = "Constant";
                                 } // Constant
@@ -330,7 +409,8 @@ void LSPServer::handleCompletion(const json &message) {
     sendMessage(response);
 }
 
-void LSPServer::handleSignatureHelp(const json &message) {
+void LSPServer::handleSignatureHelp(const json &message)
+{
     std::string uri = message["params"]["textDocument"]["uri"];
     int line = message["params"]["position"]["line"];
     int character = message["params"]["position"]["character"];
@@ -338,11 +418,13 @@ void LSPServer::handleSignatureHelp(const json &message) {
     json result = nullptr;
 
     // Load native docs from embedded data if not already loaded
-    if (nativeDocs.is_null()) {
+    if (nativeDocs.is_null())
+    {
         nativeDocs = json::parse(getNativeDocsJson());
     }
 
-    if (documents.find(uri) != documents.end()) {
+    if (documents.find(uri) != documents.end())
+    {
         std::string text = documents[uri];
 
         // Extract line text up to the cursor
@@ -350,8 +432,10 @@ void LSPServer::handleSignatureHelp(const json &message) {
         int currentLine = 0;
         size_t lineStart = 0;
 
-        for (size_t i = 0; i < text.length(); ++i) {
-            if (currentLine == line) {
+        for (size_t i = 0; i < text.length(); ++i)
+        {
+            if (currentLine == line)
+            {
                 lineStart = i;
                 break;
             }
@@ -359,7 +443,8 @@ void LSPServer::handleSignatureHelp(const json &message) {
                 currentLine++;
         }
 
-        if (currentLine == line) {
+        if (currentLine == line)
+        {
             size_t len = character;
             if (lineStart + len > text.length())
                 len = text.length() - lineStart;
@@ -369,33 +454,46 @@ void LSPServer::handleSignatureHelp(const json &message) {
             int activeParameter = 0;
             int parenPos = -1;
 
-            for (int i = lineText.length() - 1; i >= 0; --i) {
-                if (lineText[i] == ')') {
+            for (int i = lineText.length() - 1; i >= 0; --i)
+            {
+                if (lineText[i] == ')')
+                {
                     break; // Ended, not in signature
                 }
-                if (lineText[i] == ',') {
+                if (lineText[i] == ',')
+                {
                     activeParameter++;
-                } else if (lineText[i] == '(') {
+                }
+                else if (lineText[i] == '(')
+                {
                     parenPos = i;
                     break;
                 }
             }
 
-            if (parenPos != -1) {
+            if (parenPos != -1)
+            {
                 // Find function name before '('
                 std::string funcName = "";
-                for (int i = parenPos - 1; i >= 0; --i) {
-                    if (std::isspace(lineText[i])) {
+                for (int i = parenPos - 1; i >= 0; --i)
+                {
+                    if (std::isspace(lineText[i]))
+                    {
                         if (!funcName.empty())
                             break;
-                    } else if (std::isalnum(lineText[i]) || lineText[i] == '_' || lineText[i] == '.') {
+                    }
+                    else if (std::isalnum(lineText[i]) || lineText[i] == '_' || lineText[i] == '.')
+                    {
                         funcName = lineText[i] + funcName;
-                    } else {
+                    }
+                    else
+                    {
                         break;
                     }
                 }
 
-                if (!funcName.empty()) {
+                if (!funcName.empty())
+                {
                     bool found = false;
                     std::string label = "";
                     std::string documentation = "";
@@ -403,30 +501,38 @@ void LSPServer::handleSignatureHelp(const json &message) {
 
                     // Check builtins first
                     std::string matchedKey = "";
-                    if (nativeDocs.contains(funcName)) {
+                    if (nativeDocs.contains(funcName))
+                    {
                         matchedKey = funcName;
-                    } else {
+                    }
+                    else
+                    {
                         size_t dotPos = funcName.find_last_of('.');
                         std::string shortName = (dotPos != std::string::npos) ? funcName.substr(dotPos + 1) : funcName;
                         std::string suffix = "." + shortName;
-                        for (auto &el : nativeDocs.items()) {
+                        for (auto &el : nativeDocs.items())
+                        {
                             std::string k = el.key();
                             if (k == shortName ||
                                 (k.length() >= suffix.length() &&
-                                 k.compare(k.length() - suffix.length(), suffix.length(), suffix) == 0)) {
+                                 k.compare(k.length() - suffix.length(), suffix.length(), suffix) == 0))
+                            {
                                 matchedKey = k;
                                 break;
                             }
                         }
                     }
 
-                    if (!matchedKey.empty()) {
+                    if (!matchedKey.empty())
+                    {
                         auto info = nativeDocs[matchedKey];
                         label = info["signature"].get<std::string>();
                         documentation = info["doc"].get<std::string>();
 
-                        if (info.contains("params")) {
-                            for (const auto &p : info["params"]) {
+                        if (info.contains("params"))
+                        {
+                            for (const auto &p : info["params"])
+                            {
                                 parameters.push_back(
                                     {{"label", p["label"].get<std::string>()},
                                      {"documentation",
@@ -434,29 +540,37 @@ void LSPServer::handleSignatureHelp(const json &message) {
                             }
                         }
                         found = true;
-                    } else {
+                    }
+                    else
+                    {
                         // Search document for 'fn funcName(param1, param2)'
                         Lexer lexer(text);
                         std::vector<std::string> params;
                         int defLine = -1;
 
-                        while (true) {
+                        while (true)
+                        {
                             Token t = lexer.nextToken();
                             if (t.type == TokenType::END_OF_FILE)
                                 break;
 
-                            if (t.type == TokenType::FN) {
+                            if (t.type == TokenType::FN)
+                            {
                                 Token nameToken = lexer.nextToken();
-                                if (nameToken.type == TokenType::IDENTIFIER && nameToken.lexeme == funcName) {
+                                if (nameToken.type == TokenType::IDENTIFIER && nameToken.lexeme == funcName)
+                                {
                                     defLine = nameToken.line - 1; // 0-indexed
                                     Token paren = lexer.nextToken();
-                                    if (paren.type == TokenType::LPAREN) {
+                                    if (paren.type == TokenType::LPAREN)
+                                    {
                                         // Parse params
-                                        while (true) {
+                                        while (true)
+                                        {
                                             Token p = lexer.nextToken();
                                             if (p.type == TokenType::RPAREN || p.type == TokenType::END_OF_FILE)
                                                 break;
-                                            if (p.type == TokenType::IDENTIFIER) {
+                                            if (p.type == TokenType::IDENTIFIER)
+                                            {
                                                 params.push_back(p.lexeme);
                                             }
                                         }
@@ -467,9 +581,11 @@ void LSPServer::handleSignatureHelp(const json &message) {
                             }
                         }
 
-                        if (found) {
+                        if (found)
+                        {
                             // Extract documentation from comments above the function
-                            if (defLine > 0) {
+                            if (defLine > 0)
+                            {
                                 std::string docStr = "";
                                 std::istringstream iss(text);
                                 std::string l;
@@ -477,19 +593,25 @@ void LSPServer::handleSignatureHelp(const json &message) {
                                 while (std::getline(iss, l))
                                     lines.push_back(l);
 
-                                for (int i = defLine - 1; i >= 0; --i) {
+                                for (int i = defLine - 1; i >= 0; --i)
+                                {
                                     std::string cl = lines[i];
                                     // Trim leading whitespace
                                     size_t first = cl.find_first_not_of(" \t\r");
-                                    if (first != std::string::npos && cl.substr(first, 2) == "//") {
+                                    if (first != std::string::npos && cl.substr(first, 2) == "//")
+                                    {
                                         std::string commentLine = cl.substr(first + 2);
                                         // Trim leading space in comment
                                         if (!commentLine.empty() && commentLine[0] == ' ')
                                             commentLine = commentLine.substr(1);
                                         docStr = commentLine + "\n" + docStr;
-                                    } else if (first == std::string::npos) {
+                                    }
+                                    else if (first == std::string::npos)
+                                    {
                                         continue; // Empty line, keep looking
-                                    } else {
+                                    }
+                                    else
+                                    {
                                         break; // Code line, stop looking
                                     }
                                 }
@@ -498,7 +620,8 @@ void LSPServer::handleSignatureHelp(const json &message) {
                             }
 
                             label = "fn " + funcName + "(";
-                            for (size_t i = 0; i < params.size(); ++i) {
+                            for (size_t i = 0; i < params.size(); ++i)
+                            {
                                 parameters.push_back(
                                     {{"label", params[i]},
                                      {"documentation",
@@ -511,10 +634,12 @@ void LSPServer::handleSignatureHelp(const json &message) {
                         }
                     }
 
-                    if (found) {
+                    if (found)
+                    {
                         json signature = {{"label", label}, {"parameters", parameters}};
 
-                        if (!documentation.empty()) {
+                        if (!documentation.empty())
+                        {
                             signature["documentation"] = {{"kind", "markdown"}, {"value", documentation}};
                         }
 
@@ -530,35 +655,45 @@ void LSPServer::handleSignatureHelp(const json &message) {
 
     sendMessage(response);
 }
-void LSPServer::publishDiagnostics(const std::string &uri, const std::string &text) {
+void LSPServer::publishDiagnostics(const std::string &uri, const std::string &text)
+{
     json diagnostics = json::array();
 
-    try {
+    try
+    {
         Lexer lexer(text);
         Parser parser(lexer);
 
         ErrorHandling::clearErrors();
 
-        try {
+        try
+        {
             ASTNode *ast = parser.parse();
             delete ast;
-        } catch (...) {
+        }
+        catch (...)
+        {
             // Exceptions might still be thrown
         }
 
         // Gather errors from ErrorHandling
-        for (const auto &errMsg : ErrorHandling::getErrors()) {
+        for (const auto &errMsg : ErrorHandling::getErrors())
+        {
             int line = 0;
             int col = 0;
             // Try to extract line and column number from "at line X" or "at line X:Y"
             size_t linePos = errMsg.find("at line ");
-            if (linePos != std::string::npos) {
+            if (linePos != std::string::npos)
+            {
                 size_t colonPos = errMsg.find(":", linePos + 8);
-                if (colonPos != std::string::npos) {
+                if (colonPos != std::string::npos)
+                {
                     line = std::stoi(errMsg.substr(linePos + 8, colonPos - (linePos + 8))) - 1;
                     size_t endPos = errMsg.find_first_not_of("0123456789", colonPos + 1);
                     col = std::stoi(errMsg.substr(colonPos + 1, endPos - (colonPos + 1))) - 1;
-                } else {
+                }
+                else
+                {
                     line = std::stoi(errMsg.substr(linePos + 8)) - 1;
                 }
 
@@ -579,7 +714,9 @@ void LSPServer::publishDiagnostics(const std::string &uri, const std::string &te
 
             diagnostics.push_back(diagnostic);
         }
-    } catch (...) {
+    }
+    catch (...)
+    {
         // Catch any unhandled exceptions to prevent server crash
     }
 
@@ -590,19 +727,22 @@ void LSPServer::publishDiagnostics(const std::string &uri, const std::string &te
     sendMessage(notification);
 }
 
-void LSPServer::handleSemanticTokens(const json &message) {
+void LSPServer::handleSemanticTokens(const json &message)
+{
     std::string uri = message["params"]["textDocument"]["uri"];
 
     json data = json::array();
 
-    if (documents.find(uri) != documents.end()) {
+    if (documents.find(uri) != documents.end())
+    {
         std::string text = documents[uri];
         Lexer lexer(text);
 
         int prevLine = 1;
         int prevChar = 1;
 
-        while (true) {
+        while (true)
+        {
             Token t = lexer.nextToken();
             if (t.type == TokenType::END_OF_FILE)
                 break;
@@ -612,7 +752,8 @@ void LSPServer::handleSemanticTokens(const json &message) {
             int typeIdx = -1;
 
             // Map TokenType to semantic token type index
-            switch (t.type) {
+            switch (t.type)
+            {
             case TokenType::IDENTIFIER:
                 typeIdx = 3;
                 break; // variable
@@ -691,7 +832,8 @@ void LSPServer::handleSemanticTokens(const json &message) {
                 break;
             }
 
-            if (typeIdx != -1) {
+            if (typeIdx != -1)
+            {
                 // Ensure length is valid UTF-16 characters or just bytes for simple ASCII
                 // VS Code uses UTF-16 character offsets, so technically lexeme.length() is wrong for Cyrillic.
                 // For simplicity, we just use the lexeme length (or 1 if it's messy).

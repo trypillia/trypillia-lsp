@@ -2,17 +2,19 @@
 
 #include "frontend/lexer/Lexer.h"
 #include "frontend/parser/Parser.h"
-#include <nlohmann/json.hpp>
 #include "native_docs.h"
 #include <iostream>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <unordered_map>
 
 using json = nlohmann::json;
 
-namespace trypillia {
+namespace trypillia
+{
 
-class LSPServer {
+class LSPServer
+{
   public:
     LSPServer() = default;
     void run();

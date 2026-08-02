@@ -809,6 +809,148 @@
       }
     ]
   },
+  "after": {
+    "signature": "after(fn: Function) -> Void",
+    "doc": "Registers a callback that runs once after all tests in the current describe block.",
+    "params": [
+      {
+        "label": "fn: Function",
+        "doc": "The callback to register."
+      }
+    ]
+  },
+  "afterEach": {
+    "signature": "afterEach(fn: Function) -> Void",
+    "doc": "Registers a callback that runs after each test in the current describe block.",
+    "params": [
+      {
+        "label": "fn: Function",
+        "doc": "The callback to register."
+      }
+    ]
+  },
+  "assert": {
+    "signature": "assert(condition: Any, message: String) -> Void",
+    "doc": "Asserts that the condition is truthy. Fails (raises an assertion error) if the condition is false or nil.",
+    "params": [
+      {
+        "label": "condition: Any",
+        "doc": "The condition to check; false and nil fail the assertion."
+      },
+      {
+        "label": "message: String",
+        "doc": "Optional message appended to the failure report."
+      }
+    ]
+  },
+  "assertEq": {
+    "signature": "assertEq(actual: Any, expected: Any, message: String) -> Void",
+    "doc": "Asserts that actual is equal to expected.",
+    "params": [
+      {
+        "label": "actual: Any",
+        "doc": "The actual value."
+      },
+      {
+        "label": "expected: Any",
+        "doc": "The expected value."
+      },
+      {
+        "label": "message: String",
+        "doc": "Optional message appended to the failure report."
+      }
+    ]
+  },
+  "assertNeq": {
+    "signature": "assertNeq(actual: Any, unexpected: Any, message: String) -> Void",
+    "doc": "Asserts that actual is not equal to unexpected.",
+    "params": [
+      {
+        "label": "actual: Any",
+        "doc": "The actual value."
+      },
+      {
+        "label": "unexpected: Any",
+        "doc": "The value that actual must not equal."
+      },
+      {
+        "label": "message: String",
+        "doc": "Optional message appended to the failure report."
+      }
+    ]
+  },
+  "assertThrows": {
+    "signature": "assertThrows(fn: Function) -> Void",
+    "doc": "Asserts that the given function throws an error when invoked.",
+    "params": [
+      {
+        "label": "fn: Function",
+        "doc": "The function expected to throw."
+      }
+    ]
+  },
+  "before": {
+    "signature": "before(fn: Function) -> Void",
+    "doc": "Registers a callback that runs once before all tests in the current describe block.",
+    "params": [
+      {
+        "label": "fn: Function",
+        "doc": "The callback to register."
+      }
+    ]
+  },
+  "beforeEach": {
+    "signature": "beforeEach(fn: Function) -> Void",
+    "doc": "Registers a callback that runs before each test in the current describe block.",
+    "params": [
+      {
+        "label": "fn: Function",
+        "doc": "The callback to register."
+      }
+    ]
+  },
+  "describe": {
+    "signature": "describe(name: String, fn: Function) -> Void",
+    "doc": "Groups related tests. The callback runs immediately and defines its nested it() blocks under this suite.",
+    "params": [
+      {
+        "label": "name: String",
+        "doc": "The suite name."
+      },
+      {
+        "label": "fn: Function",
+        "doc": "Callback that defines the suite's tests."
+      }
+    ]
+  },
+  "fdescribe": {
+    "signature": "fdescribe(name: String, fn: Function) -> Void",
+    "doc": "Defines a focused suite; when any focused suite/test exists, only they run.",
+    "params": [
+      {
+        "label": "name: String",
+        "doc": "The suite name."
+      },
+      {
+        "label": "fn: Function",
+        "doc": "Callback that defines the suite's tests."
+      }
+    ]
+  },
+  "fit": {
+    "signature": "fit(name: String, fn: Function) -> Void",
+    "doc": "Defines a focused test; when any focused test/suite exists, only they run.",
+    "params": [
+      {
+        "label": "name: String",
+        "doc": "The test name."
+      },
+      {
+        "label": "fn: Function",
+        "doc": "The test function."
+      }
+    ]
+  },
   "input": {
     "signature": "input(prompt: String) -> String",
     "doc": "Reads a line of input from the console.",
@@ -819,6 +961,20 @@
       }
     ]
   },
+  "it": {
+    "signature": "it(name: String, fn: Function) -> Void",
+    "doc": "Defines and runs a single test, reporting pass/fail.",
+    "params": [
+      {
+        "label": "name: String",
+        "doc": "The test name."
+      },
+      {
+        "label": "fn: Function",
+        "doc": "The test function."
+      }
+    ]
+  },
   "print": {
     "signature": "print(message: Any) -> Void",
     "doc": "Prints a message to the console.",
@@ -826,6 +982,16 @@
       {
         "label": "message: Any",
         "doc": "The object or text to print."
+      }
+    ]
+  },
+  "xit": {
+    "signature": "xit(name: String) -> Void",
+    "doc": "Registers a skipped (pending) test, reported as passing without running its body.",
+    "params": [
+      {
+        "label": "name: String",
+        "doc": "The test name (marked as skipped)."
       }
     ]
   }

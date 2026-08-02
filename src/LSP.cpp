@@ -1,5 +1,6 @@
 #include "LSP.h"
 #include "utils/ErrorHandling.h"
+#include <cctype>
 #include <sstream>
 
 namespace trypillia
@@ -325,6 +326,96 @@ void LSPServer::handleCompletion(const json &message)
             items.push_back({{"label", m},
                              {"kind", 2}, // Method
                              {"detail", "Method"}});
+        }
+
+        // Suggest native module members (e.g. Math.PI, Math.sin) based on prefix before '.'
+        if (message.contains("params") && message["params"].contains("textDocument"))
+        {
+            std::string uri = message["params"]["textDocument"]["uri"];
+            int line = message["params"]["position"]["line"];
+            int character = message["params"]["position"]["character"];
+
+            if (documents.find(uri) != documents.end())
+            {
+                std::string text = documents[uri];
+
+                // Extract line text up to cursor
+                std::string lineText = "";
+                int currentLine = 0;
+                size_t lineStart = 0;
+                for (size_t i = 0; i < text.length(); ++i)
+                {
+                    if (currentLine == line)
+                    {
+                        lineStart = i;
+                        break;
+                    }
+                    if (text[i] == '\n')
+                        currentLine++;
+                }
+
+                if (currentLine == line && lineStart + character <= text.length())
+                {
+                    lineText = text.substr(lineStart, character);
+
+                    // Find the last '.' and extract the identifier before it
+                    size_t dotPos = lineText.rfind('.');
+                    if (dotPos != std::string::npos)
+                    {
+                        size_t idEnd = dotPos;
+                        size_t idStart = idEnd;
+                        while (idStart > 0 && (std::isalnum(static_cast<unsigned char>(lineText[idStart - 1])) ||
+                                               lineText[idStart - 1] == '_'))
+                            idStart--;
+                        std::string prefix = lineText.substr(idStart, idEnd - idStart);
+
+                        if (!prefix.empty())
+                        {
+                            if (nativeDocs.is_null())
+                            {
+                                nativeDocs = json::parse(getNativeDocsJson());
+                            }
+
+                            std::string searchPrefix = prefix + ".";
+                            for (auto &el : nativeDocs.items())
+                            {
+                                std::string k = el.key();
+                                if (k.length() > searchPrefix.length() &&
+                                    k.compare(0, searchPrefix.length(), searchPrefix) == 0)
+                                {
+                                    std::string member = k.substr(searchPrefix.length());
+                                    auto info = el.value();
+                                    std::string sig = info["signature"].get<std::string>();
+                                    std::string doc = info.contains("doc") ? info["doc"].get<std::string>() : "";
+
+                                    bool isConstant = sig.find('(') == std::string::npos;
+                                    int kind = isConstant ? 21 : 3; // Constant : Function
+                                    std::string detail = isConstant ? "Constant" : "Native Function";
+
+                                    // Avoid duplicates
+                                    bool exists = false;
+                                    for (const auto &item : items)
+                                    {
+                                        if (item["label"] == member)
+                                        {
+                                            exists = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (!exists)
+                                    {
+                                        items.push_back({{"label", member},
+                                                         {"kind", kind},
+                                                         {"detail", detail},
+                                                         {"documentation", doc}});
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     else

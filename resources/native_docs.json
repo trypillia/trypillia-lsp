@@ -299,6 +299,46 @@
       }
     ]
   },
+  "MockResult.err": {
+    "signature": "MockResult.err(error: Any) -> MockResult",
+    "doc": "Creates a MockResult holding an error value (a test double mirroring Result.err).",
+    "params": [
+      {
+        "label": "error: Any",
+        "doc": "The error value."
+      }
+    ]
+  },
+  "MockResult.isErr": {
+    "signature": "MockResult.isErr() -> Bool",
+    "doc": "Returns true if this MockResult holds an error.",
+    "params": []
+  },
+  "MockResult.isOk": {
+    "signature": "MockResult.isOk() -> Bool",
+    "doc": "Returns true if this MockResult holds a value.",
+    "params": []
+  },
+  "MockResult.ok": {
+    "signature": "MockResult.ok(value: Any) -> MockResult",
+    "doc": "Creates a MockResult holding a value (a test double mirroring Result.ok).",
+    "params": [
+      {
+        "label": "value: Any",
+        "doc": "The success value."
+      }
+    ]
+  },
+  "MockResult.unwrap": {
+    "signature": "MockResult.unwrap() -> Any",
+    "doc": "Returns the held value. Fails if this MockResult is an error.",
+    "params": []
+  },
+  "MockResult.unwrapErr": {
+    "signature": "MockResult.unwrapErr() -> Any",
+    "doc": "Returns the held error. Fails if this MockResult is ok.",
+    "params": []
+  },
   "OS.args": {
     "signature": "OS.args() -> Array",
     "doc": "Returns an array containing the command-line arguments passed when the process was launched.",

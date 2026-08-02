@@ -74,7 +74,7 @@ python3 scripts/sort_native_docs.py /path/to/native_docs.json
 
 ### VS Code
 
-Install the [Trypillia extension](https://marketplace.visualstudio.com/items?itemName=trypillia.trypillia) from the marketplace.
+Install the [Trypillia VS Code extension](https://github.com/trypillia/vscode-trypillia) from source.
 
 ### Neovim
 

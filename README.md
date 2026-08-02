@@ -15,6 +15,47 @@ The binary will be at `build/trypillia-lsp`.
 
 ## Scripts
 
+### Adding Native Documentation
+
+The LSP reads native module documentation from `resources/native_docs.json`. This file is embedded into the binary at CMake configure time and powers autocomplete suggestions, hover tooltips, and member discovery.
+
+**Key conventions:**
+
+| Pattern | Example | Type |
+|---|---|---|
+| `Module.method` | `Math.sin`, `Result.unwrap` | Module method |
+| `globalFunc` | `print`, `assert` | Global function |
+| `Module.CONSTANT` | `Math.PI` | Module constant |
+
+**Entry format:**
+
+```json
+{
+  "Module.method": {
+    "signature": "Module.method(param: Type) -> ReturnType",
+    "doc": "One-line description.",
+    "params": [
+      { "label": "param: Type", "doc": "Parameter description." }
+    ]
+  }
+}
+```
+
+**Constants vs functions:** If the `signature` contains `(` it's treated as a function (`kind: 3`). Otherwise it's a constant (`kind: 21`). For example, `"Math.PI -> Number"` (no parentheses) is detected as a constant.
+
+**After adding entries:**
+
+1. Sort the file alphabetically:
+   ```bash
+   python3 scripts/sort_native_docs.py
+   ```
+2. Reconfigure and rebuild:
+   ```bash
+   cmake -B build
+   cmake --build build
+   ```
+   The JSON is read at configure time via `configure_file`, so a plain `--build` is not sufficient — you must re-run CMake configuration.
+
 ### Sorting `native_docs.json`
 
 The `resources/native_docs.json` file should be kept sorted by key for consistent diffs. Use the sort script to reorder entries:

@@ -13,6 +13,22 @@ cmake --build build --config Release
 
 The binary will be at `build/trypillia-lsp`.
 
+## Scripts
+
+### Sorting `native_docs.json`
+
+The `resources/native_docs.json` file should be kept sorted by key for consistent diffs. Use the sort script to reorder entries:
+
+```bash
+python3 scripts/sort_native_docs.py
+```
+
+This reads `resources/native_docs.json`, sorts all entries alphabetically by key, and writes the result back in-place. A custom path can be supplied:
+
+```bash
+python3 scripts/sort_native_docs.py /path/to/native_docs.json
+```
+
 ## Editor Setup
 
 ### VS Code

@@ -274,6 +274,11 @@
     "doc": "Returns an array of all values in the map.",
     "params": []
   },
+  "Math.PI": {
+    "signature": "Math.PI -> Number",
+    "doc": "The mathematical constant PI (≈3.141592653589793).",
+    "params": []
+  },
   "Math.cos": {
     "signature": "Math.cos(angle: Number) -> Number",
     "doc": "Returns the cosine of the given angle.",

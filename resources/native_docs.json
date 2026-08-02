@@ -339,6 +339,16 @@
       }
     ]
   },
+  "Promise": {
+    "signature": "Promise(executor: Function) -> Promise",
+    "doc": "Creates a new Promise by invoking the executor function synchronously with resolve and reject callbacks. The returned promise stays pending until either callback is invoked.",
+    "params": [
+      {
+        "label": "executor: Function",
+        "doc": "A function (resolve, reject) => Void; call resolve(value) to fulfill or reject(reason) to reject the promise."
+      }
+    ]
+  },
   "Random.choice": {
     "signature": "Random.choice(list: List) -> Any",
     "doc": "Returns a random element from the non-empty list.",
